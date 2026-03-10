@@ -13,15 +13,8 @@ The goal of this project is to create a NFS Server container on top of Kubernete
 
 [source,bash]
 ----
-export PROJECT_NAME=nfs-server
-
-# For OpenShift
-oc new-project $PROJECT_NAME
-oc adm policy add-scc-to-user privileged -z default -n $PROJECT_NAME
-
-# For Kubernetes
-kubectl create namespace $PROJECT_NAME
-
+oc new-project nfs-server
+oc adm policy add-scc-to-user privileged -z default -n nfs-server
 ----
 
 == Installing
@@ -32,9 +25,7 @@ To deploy a NFS Server ephemeral (using emptyDir), run:
 
 [source,bash]
 ----
-kubectl apply \
-  -f https://raw.githubusercontent.com/luszczynski/kubernetes-nfs/master/nfs-server-ephemeral.yml \
-  -n $PROJECT_NAME
+oc apply -f https://raw.githubusercontent.com/gojeaqui/kubernetes-nfs/master/nfs-server-ephemeral.yml -n nfs-server
 ----
 
 === Deploying NFS Server Persistent
@@ -44,9 +35,7 @@ To deploy a NFS Server persistent (using PV), run:
 [source,bash]
 ----
 # Create pvc for NFS
-kubectl apply \
-  -f https://raw.githubusercontent.com/luszczynski/kubernetes-nfs/master/nfs-server-persistent.yml \
-  -n $PROJECT_NAME
+oc apply -f https://raw.githubusercontent.com/gojeaqui/kubernetes-nfs/master/nfs-server-persistent.yml -n nfs-server
 ----
 
 === Creating PVs for the cluster
@@ -55,13 +44,13 @@ We'll need the ClusterIp of our NFS Server to use it in our PVs. We can get it b
 
 [source,bash]
 ----
-NFS_CLUSTER_IP=$(kubectl -n $PROJECT_NAME get svc/nfs-server-alpine -o=jsonpath='{.spec.clusterIP}')
+NFS_CLUSTER_IP=$(oc -n nfs-server get svc/nfs-server-alpine -o=jsonpath='{.spec.clusterIP}')
 
 # Now make sure the var NFS_CLUSTER_IP contains the cluster ip:
 echo $NFS_CLUSTER_IP
 
 # Now install all PVs by running:
-curl https://raw.githubusercontent.com/luszczynski/kubernetes-nfs/master/persistent-volumes.yml | sed "s/REPLACEME/$NFS_CLUSTER_IP/g"  | kubectl apply -f -
+curl https://raw.githubusercontent.com/gojeaqui/kubernetes-nfs/master/persistent-volumes.yml | sed "s/REPLACEME/$NFS_CLUSTER_IP/g"  | oc apply -f -
 ----
 
 ==== OPTIONAL
@@ -105,9 +94,9 @@ kubectl apply -f /tmp/persistent-volume-tmp.yml
 
 [source,bash]
 ----
-kubectl delete deploy/nfs-server-alpine -n $PROJECT_NAME
-kubectl delete svc/nfs-server-alpine -n $PROJECT_NAME
-kubectl delete pvc/nfs-pvc -n $PROJECT_NAME
+kubectl delete deploy/nfs-server-alpine -n nfs-server
+kubectl delete svc/nfs-server-alpine -n nfs-server
+kubectl delete pvc/nfs-pvc -n nfs-server
 ----
 
 === Removing PVs

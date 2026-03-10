@@ -2,12 +2,13 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nfs-pvc
+  namespace: nfs-server
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 50Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -17,6 +18,7 @@ metadata:
     app.kubernetes.io/component: nfs-server-alpine
     app.kubernetes.io/instance: nfs-server-alpine
   name: nfs-server-alpine
+  namespace: nfs-server
 spec:
   replicas: 1
   selector:
@@ -38,7 +40,9 @@ spec:
           value: /nfsshare
         - name: VOLUME_COUNT
           value: "100"
-        image: itsthenetwork/nfs-server-alpine@sha256:7fa99ae65c23c5af87dd4300e543a86b119ed15ba61422444207efc7abd0ba20
+        #image: itsthenetwork/nfs-server-alpine@sha256:7fa99ae65c23c5af87dd4300e543a86b119ed15ba61422444207efc7abd0ba20
+        #image: registry.k8s.io/volume-nfs:0.8
+        image: docker.io/itsthenetwork/nfs-server-alpine:latest
         imagePullPolicy: IfNotPresent
         name: nfs-server-alpine
         startupProbe:
@@ -84,6 +88,7 @@ metadata:
     app.kubernetes.io/component: nfs-server-alpine
     app.kubernetes.io/instance: nfs-server-alpine
   name: nfs-server-alpine
+  namespace: nfs-server
 spec:
   ports:
   - port: 2049
